@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Market Share — Atrativos do Rio</title>
+<meta name="robots" content="noindex,nofollow">
+<link rel="stylesheet" href="assets/styles.css">
+</head>
+<body>
+<header class="hero">
+  <img class="hero__symbol" src="assets/symbol-color.png" alt="" aria-hidden="true">
+  <div class="wrap hero__inner">
+    <img class="hero__logo" src="assets/logo-grupo-iter-white.png" alt="Grupo Iter">
+    <p class="eyebrow">Inteligência de mercado</p>
+    <h1>Market Share</h1>
+    <p class="hero__sub">Visitação e market share dos atrativos do Rio de Janeiro. <span id="dados-ate"></span></p>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="filters card" aria-label="Filtros">
+    <label>Ano de análise <select id="f-ano"></select></label>
+    <label>Comparar com <select id="f-comp"></select></label>
+    <label>Mês de fechamento <select id="f-mes"></select></label>
+  </section>
+
+  <aside id="aviso" class="aviso" hidden></aside>
+
+  <section class="insight card" aria-live="polite">
+    <p class="eyebrow">Em uma frase</p>
+    <p id="insight" class="insight__text"></p>
+  </section>
+
+  <section class="kpis" id="kpis" aria-label="Indicadores do Bondinho"></section>
+
+  <section class="card">
+    <div class="card__head">
+      <h2>Visão por atração</h2>
+      <p class="muted" id="tab-sub"></p>
+    </div>
+    <div class="scroll"><table id="tabela"></table></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card"><h2>PAX nos últimos 13 meses <span class="unit">mil</span></h2><div class="chart"><canvas id="c-pax"></canvas></div></div>
+    <div class="card"><h2>Market share nos últimos 13 meses</h2><div class="chart"><canvas id="c-share"></canvas></div></div>
+  </section>
+
+  <section class="grid2">
+    <div class="card"><h2>PAX acumulado no ano (YTD) <span class="unit">mil</span></h2><div class="chart"><canvas id="c-ytd-pax"></canvas></div></div>
+    <div class="card"><h2>Market share acumulado no ano (YTD)</h2><div class="chart"><canvas id="c-ytd-share"></canvas></div></div>
+  </section>
+
+  <section class="card">
+    <div class="card__head">
+      <h2>Variação do PAX mês a mês</h2>
+      <p class="muted" id="heat-sub"></p>
+    </div>
+    <div class="scroll"><div id="heat" class="heat"></div></div>
+    <div class="legend-heat"><span class="lg lg--neg"></span> queda <span class="lg lg--pos"></span> alta · cor mais forte = variação maior</div>
+  </section>
+</main>
+
+<footer class="wrap foot">
+  <p id="nota-rodape" class="foot__nota"></p>
+  <p class="muted" id="fonte"></p>
+  <p class="muted">Cristo = Trem do Corcovado + Paineiras. Mercado = Bondinho, AquaRio, Cristo, BioParque e YupStar. Valores de PAX em milhares.</p>
+</footer>
+
+<script src="assets/vendor/chart.umd.min.js"></script>
+<script src="data/pax.js"></script>
+<script src="assets/app.js"></script>
+</body>
+</html>

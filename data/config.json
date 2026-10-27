@@ -1,0 +1,5 @@
+{
+  "bioparque_zero_desde": "2026-01",
+  "nota_bioparque": "Com a troca de gestão do parque, não estamos conseguindo os dados do BioParque em 2026. Ele foi considerado zerado a partir de {desde}, o que eleva o market share dos demais e limita a comparação com 2025.",
+  "fonte": "Painel do Turismo Carioca (SIURB) e relacionamento direto com as atrações. Atualização mensal, com dados do mês anterior."
+}
