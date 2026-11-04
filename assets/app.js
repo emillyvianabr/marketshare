@@ -6,12 +6,13 @@
   const RAW = ['Bondinho','AquaRio','Trem Corcovado','Paineiras','BioParque','YupStar'];
   const CRISTO = 'Cristo (total)', MERC = 'Mercado';
   const ORDEM = ['Bondinho','AquaRio',CRISTO,'Trem Corcovado','Paineiras','BioParque','YupStar'];
-  const COR = {'Bondinho':'#4B4F9E','AquaRio':'#62BAB6',[CRISTO]:'#233744','Trem Corcovado':'#1D6DB6','Paineiras':'#2F9E78','BioParque':'#E8A13A','YupStar':'#EB4A75'};
+  // mesmas cores do relatório em PPT
+  const COR = {'Bondinho':'#FF6600','AquaRio':'#E93CAC',[CRISTO]:'#753BBD','Trem Corcovado':'#FFC000','Paineiras':'#A6A6A6','BioParque':'#2E9E78','YupStar':'#00B0F0'};
   const nf1 = new Intl.NumberFormat('pt-BR',{minimumFractionDigits:1,maximumFractionDigits:1});
   const nf0 = new Intl.NumberFormat('pt-BR',{maximumFractionDigits:0});
   const $ = (id) => document.getElementById(id);
 
-  let DB = {}, CFG = {}, ZERO = '9999-99', charts = [];
+  let DB = {}, CFG = {}, ZERO = '9999-99', charts = [], EXCL = false;   // EXCL: BioParque fora do mercado nos dois períodos
   const key = (y, m) => y + '-' + String(m).padStart(2, '0');
   const lab = (ym) => MESES[+ym.slice(5) - 1] + '/' + ym.slice(2, 4);
   const addM = (y, m, k) => { const t = y * 12 + (m - 1) + k; return [Math.floor(t / 12), t % 12 + 1]; };
@@ -32,10 +33,11 @@
   function val(ym, att) {
     const r = DB[ym]; if (!r) return 0;
     if (att === CRISTO) return (r['Trem Corcovado'] || 0) + (r['Paineiras'] || 0);
-    if (att === MERC) return ['Bondinho','AquaRio',CRISTO,'BioParque','YupStar'].reduce((s, a) => s + val(ym, a), 0);
+    if (att === MERC) return ['Bondinho','AquaRio',CRISTO,'BioParque','YupStar'].filter((a) => !(EXCL && a === 'BioParque')).reduce((s, a) => s + val(ym, a), 0);
     return r[att] || 0;
   }
   const hasData = (ym) => !!DB[ym];
+  const ordemAtual = () => EXCL ? ORDEM.filter((a) => a !== 'BioParque') : ORDEM;
   function ytd(y, m, att) { let s = 0; for (let i = 1; i <= m; i++) s += val(key(y, i), att); return s; }
 
   /* ---------- formatação ---------- */
@@ -51,6 +53,8 @@
     return { A: +$('f-ano').value, B: +$('f-comp').value, M: +$('f-mes').value };
   }
   function marcado(s) { return key(s.A, s.M) >= ZERO || key(s.B, s.M) >= ZERO; }
+  // regra fixa: qualquer comparação que envolva o ano sem dados do BioParque (2026) tira o BioParque do mercado nos dois períodos
+  const excluirBio = (s) => { const zy = +ZERO.slice(0, 4); return !!zy && (s.A === zy || s.B === zy); };
 
   function metrics(att, s) {
     const kA = key(s.A, s.M), kB = key(s.B, s.M);
@@ -72,6 +76,7 @@
     fillComp(); fillMes();
     $('f-ano').onchange = () => { fillComp(); fillMes(); render(); };
     $('f-comp').onchange = render; $('f-mes').onchange = render;
+    $('btn-export').onclick = exportar;
     const last = yms[yms.length - 1];
     $('dados-ate').textContent = 'Dados até ' + MESES_LONGO[+last.slice(5) - 1] + ' de ' + last.slice(0, 4) + '.';
   }
@@ -93,7 +98,8 @@
     const el = $('aviso');
     const [zy, zm] = ZERO.split('-').map(Number);
     const p = [];
-    if (marcado(s)) p.push('<b>* Atenção:</b> ' + CFG.nota_bioparque.replace('{desde}', MESES_LONGO[zm - 1] + ' de ' + zy));
+    if (EXCL) p.push('<b>Base comparável:</b> ' + CFG.nota_exclusao);
+    else if (marcado(s)) p.push('<b>* Atenção:</b> ' + CFG.nota_bioparque.replace('{desde}', MESES_LONGO[zm - 1] + ' de ' + zy));
     if (s.A === 2019 || s.B === 2019) p.push('<b>Comparação com 2019:</b> o mercado de 2019 considera só Bondinho, AquaRio e Cristo (a YupStar abriu em dez/19 e o BioParque entrou em mar/21), então variações do mercado e shares não são totalmente comparáveis.');
     el.hidden = !p.length; el.innerHTML = p.join('<br>');
   }
@@ -102,7 +108,7 @@
     const M = metrics(CRISTO, s), B = metrics('Bondinho', s), K = metrics(MERC, s);
     const pl = `${MESES[s.M - 1]}/${String(s.A).slice(2)}`, cl = `${MESES[s.M - 1]}/${String(s.B).slice(2)}`;
     const col = (v, t) => `<span class="${v > 0 ? 'pos' : v < 0 ? 'neg' : ''}">${t}</span>`;
-    let t = `Em ${pl}, o Bondinho recebeu <b>${nf1.format(B.mA)} mil</b> visitantes`;
+    let t = `Em ${pl}, o <b class="c-bond">Bondinho</b> recebeu <b>${nf1.format(B.mA)} mil</b> visitantes`;
     if (B.vM !== null) t += ` (${col(B.vM, fVar(B.vM))} vs ${cl})`;
     t += ` e ficou com <b>${B.shA !== null ? pct(B.shA) : '—'}${star}</b> do mercado`;
     if (B.dM !== null) t += ` (${col(B.dM, fPP(B.dM))})`;
@@ -132,7 +138,7 @@
       ['PAX acumulado (YTD)', nf1.format(B.yA), 'mil', chip(B.vY, fVar), `jan–${MESES[s.M - 1]}/${s.A} vs ${nf1.format(B.yB)} mil em ${s.B}`],
       ['Market share YTD', (B.ysA !== null ? pct(B.ysA) : '—') + star, '', chip(B.dY, fPP), `vs ${B.ysB !== null ? pct(B.ysB) : '—'} em ${s.B}`]
     ];
-    $('kpis').innerHTML = items.map((i) => `<article class="kpi"><p class="kpi__label">Bondinho · ${i[0]}</p>
+    $('kpis').innerHTML = items.map((i) => `<article class="kpi"><p class="kpi__label"><span class="dot"></span>Bondinho · ${i[0]}</p>
       <p class="kpi__value">${i[1]}${i[2] ? `<small>${i[2]}</small>` : ''}</p>${i[3]}<p class="kpi__ref">${i[4]}</p></article>`).join('');
   }
 
@@ -143,9 +149,10 @@
       <th>${s.A}</th><th>${s.B}</th><th>Δ p.p.</th><th>${s.A}</th><th>${s.B}</th><th>Δ p.p.</th></tr>`;
     const h1 = `<tr><th rowspan="2" style="text-align:left">Atração</th><th colspan="3">PAX no mês (mil)</th><th colspan="3">PAX YTD (mil)</th>
       <th colspan="3">Market share no mês${star}</th><th colspan="3">Market share YTD${star}</th></tr>`;
-    const rows = ORDEM.concat([MERC]).map((att) => {
+    const rows = ordemAtual().concat([MERC]).map((att) => {
       const m = metrics(att, s);
-      const nome = att === 'BioParque' ? 'BioParque' + star : att === MERC ? 'Mercado' : att;
+      const nome0 = att === 'BioParque' ? 'BioParque' + star : att === MERC ? 'Mercado' : att;
+      const nome = (COR[att] ? `<i class="sw" style="background:${COR[att]}"></i>` : '') + nome0;
       const c = att === MERC ? 'tot' : (att === 'Trem Corcovado' || att === 'Paineiras') ? 'sub' : att === 'Bondinho' ? 'dest' : '';
       const sh = (x) => x === null ? '—' : pct(x);
       const num = (x) => x ? nf1.format(x) : '–';
@@ -174,6 +181,15 @@
           ctx.fillText(opts.fmt(v), bar.x, bar.y + bar.height / 2);
         });
       });
+      if (opts.totais) {
+        ctx.font = "700 14px 'Stolzl', sans-serif"; ctx.fillStyle = '#233744'; ctx.textBaseline = 'bottom';
+        const n = chart.data.datasets.length;
+        chart.data.labels.forEach((_, j) => {
+          let topY = Infinity, x = 0;
+          for (let i = 0; i < n; i++) { const b = chart.getDatasetMeta(i).data[j]; if (b && b.height > 0) { topY = Math.min(topY, b.y); x = b.x; } }
+          if (topY < Infinity) ctx.fillText(opts.totais[j] + ' mil', x, topY - 6);
+        });
+      }
       ctx.restore();
     }
   };
@@ -197,27 +213,29 @@
     mk('c-share', line((v) => nf0.format(v * 100) + '%', (v) => pct(v), ds((w, a) => { const t = val(w, MERC); return t ? val(w, a) / t : null; })));
 
     // YTD empilhado
-    const ordem = ['BioParque','YupStar','AquaRio','Bondinho',CRISTO];
+    const ordem = ['BioParque','YupStar','AquaRio','Bondinho',CRISTO].filter((a) => !(EXCL && a === 'BioParque'));
     const lblY = ['YTD ' + String(s.B).slice(2), 'YTD ' + String(s.A).slice(2)];
-    const stack = (fn, fmt, tip, max) => ({ type: 'bar', plugins: [barLabels],
+    const totais = [ytd(s.B, s.M, MERC), ytd(s.A, s.M, MERC)];
+    const topo = Math.max(...totais);
+    const stack = (fn, fmt, tip, max, ymax) => ({ type: 'bar', plugins: [barLabels],
       data: { labels: lblY, datasets: ordem.map((a) => ({ label: a === 'BioParque' ? 'BioParque' + star : a, backgroundColor: COR[a], borderWidth: 1, borderColor: '#fff', borderRadius: 0,
         data: [fn(s.B, a), fn(s.A, a)], maxBarThickness: 120 })) },
       options: { responsive: true, maintainAspectRatio: false,
-        plugins: { barLabels: { fmt }, legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } },
+        plugins: { barLabels: { fmt, totais: totais.map((v) => nf0.format(v)) }, legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } },
           tooltip: { callbacks: { label: (c) => ' ' + c.dataset.label + ': ' + tip(c.parsed.y) } } },
         scales: { x: { stacked: true, grid: { display: false } },
-          y: { stacked: true, beginAtZero: true, max, ticks: { callback: (v) => max ? nf0.format(v * 100) + '%' : nf0.format(v) }, grid: { color: '#E6ECEF' } } } } });
-    mk('c-ytd-pax', stack((y, a) => ytd(y, s.M, a), (v) => nf0.format(v), (v) => nf1.format(v) + ' mil'));
-    mk('c-ytd-share', stack((y, a) => { const t = ytd(y, s.M, MERC); return t ? ytd(y, s.M, a) / t : 0; }, (v) => nf0.format(v * 100) + '%', (v) => pct(v), 1));
+          y: { stacked: true, beginAtZero: true, max: ymax, display: false, grid: { display: false } } } } });
+    mk('c-ytd-pax', stack((y, a) => ytd(y, s.M, a), (v) => nf0.format(v), (v) => nf1.format(v) + ' mil', null, topo * 1.12));
+    mk('c-ytd-share', stack((y, a) => { const t = ytd(y, s.M, MERC); return t ? ytd(y, s.M, a) / t : 0; }, (v) => nf0.format(v * 100) + '%', (v) => pct(v), 1, 1.12));
   }
 
   /* ---------- heatmap ---------- */
   function renderHeat(s, star) {
     $('heat-sub').textContent = `${s.A} vs ${s.B}, mês a mês`;
     let h = '<div class="h"></div>' + MESES.map((m) => `<div class="h">${m}</div>`).join('');
-    ORDEM.concat([MERC]).forEach((att) => {
+    ordemAtual().concat([MERC]).forEach((att) => {
       const nome = att === 'BioParque' ? 'BioParque' + star : att;
-      h += `<div class="r">${nome}</div>`;
+      h += `<div class="r">${COR[att] ? `<i class="sw" style="background:${COR[att]}"></i>` : ''}${nome}</div>`;
       for (let m = 1; m <= 12; m++) {
         const a = val(key(s.A, m), att), b = val(key(s.B, m), att);
         const v = hasData(key(s.A, m)) ? varPct(a, b) : null;
@@ -232,12 +250,62 @@
   }
 
   function render() {
-    const s = state(); const star = marcado(s) ? '*' : '';
+    const s = state(); EXCL = excluirBio(s);
+    const star = '';
     renderAviso(s); renderInsight(s, star); renderKpis(s, star);
     renderTabela(s, star); renderCharts(s, star); renderHeat(s, star);
-    const [zy, zm] = ZERO.split('-').map(Number);
-    $('nota-rodape').textContent = '* ' + CFG.nota_bioparque.replace('{desde}', MESES_LONGO[zm - 1] + ' de ' + zy);
+    $('nota-rodape').textContent = notaRodape(s);
     $('fonte').textContent = 'Fonte: ' + CFG.fonte;
+  }
+  function notaRodape(s) {
+    const [zy, zm] = ZERO.split('-').map(Number);
+    if (EXCL) return CFG.nota_exclusao;
+    if (marcado(s)) return '* ' + CFG.nota_bioparque.replace('{desde}', MESES_LONGO[zm - 1] + ' de ' + zy);
+    return '';
+  }
+
+  /* ---------- exportação (PPT) ---------- */
+  // Modelo de dados do relatório: só números; a montagem dos slides fica em assets/export-pptx.js
+  function buildReport() {
+    const s = state(); EXCL = excluirBio(s);
+    const wins = []; for (let k = 12; k >= 0; k--) { const [y, m] = addM(s.A, s.M, -k); wins.push(key(y, m)); }
+    const off = s.A - s.B;
+    const linhas = ['Bondinho','AquaRio',CRISTO,'Trem Corcovado','Paineiras','YupStar'];
+    const serie = (fn) => { const o = {}; linhas.forEach((a) => { o[a] = wins.map((w) => hasData(w) ? fn(w, a) : null); }); return o; };
+    const pax = serie((w, a) => val(w, a));
+    const share = serie((w, a) => { const t = val(w, MERC); return t ? val(w, a) / t : null; });
+    const yoy = {};
+    ['Bondinho', CRISTO, 'Trem Corcovado', 'Paineiras'].forEach((a) => {
+      yoy[a] = wins.map((w) => { const ant = key(+w.slice(0, 4) - off, +w.slice(5)); return hasData(w) && hasData(ant) ? varPct(val(w, a), val(ant, a)) : null; });
+    });
+    const m = {}; ordemAtual().concat([MERC]).forEach((a) => { m[a] = metrics(a, s); });
+    const cfgx = CFG.export || {};
+    return {
+      A: s.A, B: s.B, M: s.M, mes: MESES_LONGO[s.M - 1], mes3: MESES[s.M - 1],
+      excl: EXCL, marcado: marcado(s), mostraBio: !EXCL,
+      janela: wins.map((w) => ({ key: w, label: lab(w) })),
+      linhas: linhas.filter((a) => pax[a].some((v) => v > 0)),
+      pax, share, yoy, m,
+      titulo: cfgx.titulo || 'PAX ATRATIVOS - RIO DE JANEIRO',
+      fonte: cfgx.fonte || 'PAX informado por cada atrativo.',
+      nota: EXCL ? (cfgx.nota_bioparque || CFG.nota_exclusao) : (marcado(s) ? CFG.nota_bioparque.replace('{desde}', MESES_LONGO[+ZERO.slice(5) - 1] + ' de ' + ZERO.slice(0, 4)) : 'Mercado: Bondinho, AquaRio, Cristo (Trem + Paineiras), BioParque e YupStar.')
+    };
+  }
+  const carregar = (src) => new Promise((ok, erro) => {
+    const t = document.createElement('script'); t.src = src; t.onload = ok; t.onerror = () => erro(new Error('Falha ao carregar ' + src));
+    document.head.appendChild(t);
+  });
+  async function exportar() {
+    const btn = $('btn-export'), st = $('export-status'), rot = btn.querySelector('span');
+    btn.disabled = true; rot.textContent = 'Gerando…'; st.textContent = ''; st.className = 'export-status';
+    try {
+      if (!window.PptxGenJS) await carregar('assets/vendor/pptxgen.bundle.js');
+      if (!window.PaxExport) await carregar('assets/export-pptx.js');
+      const nome = await window.PaxExport.baixar(buildReport());
+      st.textContent = nome + ' baixado.';
+    } catch (e) {
+      console.error(e); st.textContent = 'Não foi possível gerar o PPT. ' + (e.message || ''); st.className = 'export-status export-status--erro';
+    } finally { btn.disabled = false; rot.textContent = 'Exportar PPT'; }
   }
 
   /* ---------- carga ---------- */
@@ -253,6 +321,7 @@
   }
   load().then(([csv, cfg]) => {
     CFG = cfg; ZERO = cfg.bioparque_zero_desde || ZERO;
+    CFG.nota_exclusao = CFG.nota_exclusao || 'O mercado foi calculado sem o BioParque nos dois períodos, para comparar a mesma base.';
     DB = parseCSV(csv); applyRules(); initFilters(); render();
   }).catch(() => {
     document.querySelector('main').innerHTML = '<section class="card"><h2>Não foi possível carregar os dados</h2><p>Abra o painel pelo endereço publicado (GitHub Pages) ou rode <code>python -m http.server</code> na pasta do projeto.</p></section>';

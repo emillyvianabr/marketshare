@@ -7,9 +7,9 @@ Toda a informação vem de **um arquivo**: `data/pax.csv`.
 
 ```
 index.html              página do painel
-assets/                 estilos, lógica (app.js), fontes Stolzl, logo e biblioteca de gráficos
+assets/                 estilos, lógica (app.js), exportação para PPT (export-pptx.js), fontes Stolzl, logo e bibliotecas
 data/pax.csv            dados mensais (é o único arquivo que você edita todo mês)
-data/config.json        regra do BioParque e textos de nota
+data/config.json        regra do BioParque, textos de nota e textos do PPT exportado
 scripts/validate.py     confere o CSV antes de publicar
 .github/workflows/      validação + publicação automática
 ```
@@ -33,6 +33,30 @@ scripts/validate.py     confere o CSV antes de publicar
    Se houver erro (atração com nome errado, data inválida, mês incompleto), a publicação é bloqueada e a aba **Actions** mostra o motivo.
 
 Quem prefere continuar no Excel: `python scripts/xlsx_to_csv.py PAX_Concorrencia_Set26_organizado.xlsx` regera o CSV a partir da aba Base_PAX.
+
+## Exportar para PowerPoint
+
+O botão **Exportar PPT** (canto direito dos filtros) baixa um `.pptx` com **o que estiver selecionado na tela**
+(ano, comparação, mês de fechamento). Nome do arquivo: `Report_Pax_Atrativos_Rio_de_Janeiro_Set26.pptx`.
+
+O arquivo segue o relatório mensal, em 2 slides (16:9):
+
+1. **PAX** — texto de abertura, linhas dos últimos 13 meses, barras YTD (com a abertura Trem/Paineiras ao lado do Cristo),
+   variações ao lado de cada série e tabela de variação mês a mês.
+2. **Market share** — texto de abertura, linhas de share, barras YTD em % e variações em p.p.
+
+- Os gráficos são **nativos do PowerPoint** (clique com o botão direito → *Editar dados*). Rótulos de variação, abertura do Cristo e tabela são formas/tabela editáveis.
+- Os textos de abertura são gerados a partir dos números (mesmo estilo do relatório) — revise antes de enviar.
+- Fonte usada: *Ofelia Display* (a mesma do relatório). Se não estiver instalada, o PowerPoint substitui por outra.
+- Textos fixos (título, fonte, nota do BioParque no rodapé) ficam em `data/config.json`, bloco `"export"`.
+- A biblioteca que monta o PPT (`assets/vendor/pptxgen.bundle.js`, PptxGenJS 4.0.1) só é carregada quando o botão é clicado.
+  Funciona também abrindo o `index.html` por duplo clique.
+
+## Critério do BioParque (painel = relatório)
+
+Sem dados do BioParque em 2026, **toda comparação que envolva 2026 calcula o mercado sem o BioParque nos dois períodos**
+(mesma regra do relatório em PPT; não há filtro para mudar isso). Comparações entre outros anos mantêm o BioParque.
+O ano vem de `bioparque_zero_desde` em `data/config.json`; o texto do aviso fica em `nota_exclusao`.
 
 ## BioParque em 2026
 
