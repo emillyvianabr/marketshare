@@ -63,7 +63,7 @@ except Exception as e:
     erros.append(f"config.json inválido: {e}")
 
 # fatores externos (data/eventos.json) — opcional
-TIPOS, IMPACTOS = {"obras", "sol", "chuva", "evento", "outro"}, {"negativo", "positivo", "neutro"}
+TIPOS, IMPACTOS = {"obras", "clima", "sol", "chuva", "evento", "outro"}, {"negativo", "positivo", "neutro"}
 def _ym(s):
     try:
         a, m = str(s).split("-")[:2]; return len(a) == 4 and 1 <= int(m) <= 12

@@ -45,7 +45,7 @@ Tudo vem de **`data/eventos.json`** — uma lista, um bloco por fator:
 {
   "mes": "2026-03",            // AAAA-MM
   "ate": "2026-04",            // opcional: período (o símbolo aparece em cada mês)
-  "tipo": "obras",             // obras 🚧 · sol ☀️ · chuva 🌧️ · evento 🎉 · outro ℹ️
+  "tipo": "obras",             // obras 🚧 · clima ⛅ · evento 🎉 · outro ℹ️
   "titulo": "Obras no acesso", // título do quadro
   "descricao": "O que aconteceu e como afetou o PAX.",
   "impacto": "negativo",       // negativo · positivo · neutro (cor do contorno)

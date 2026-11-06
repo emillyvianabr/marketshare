@@ -166,11 +166,10 @@
   }
 
   /* ---------- fatores externos (símbolos sobre os meses) ---------- */
-  // Fonte: data/eventos.json. Tipos: obras, sol, chuva, evento, outro
+  // Fonte: data/eventos.json. Tipos: obras, clima, evento, outro ("sol" e "chuva" são aceitos e viram "clima")
   const EVT = {
     obras:  { ico: '🚧', nome: 'Obras' },
-    sol:    { ico: '☀️', nome: 'Sol / calor' },
-    chuva:  { ico: '🌧️', nome: 'Chuva' },
+    clima:  { ico: '⛅', nome: 'Clima' },
     evento: { ico: '🎉', nome: 'Evento' },
     outro:  { ico: 'ℹ️', nome: 'Outro fator' }
   };
@@ -196,7 +195,7 @@
       for (let g = 0; g < 60 && y * 12 + m <= y2 * 12 + m2; g++) {   // período ("ate") vira um símbolo por mês
         const ym = key(y, m);
         (out[ym] = out[ym] || []).push(Object.assign({}, e, { ym, ini, fim,
-          tipo: EVT[e.tipo] ? e.tipo : 'outro', impacto: IMP[e.impacto] ? e.impacto : 'neutro' }));
+          tipo: (['sol', 'chuva'].includes(e.tipo) ? 'clima' : EVT[e.tipo] ? e.tipo : 'outro'), impacto: IMP[e.impacto] ? e.impacto : 'neutro' }));
         [y, m] = addM(y, m, 1);
       }
     });
