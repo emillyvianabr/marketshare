@@ -1,0 +1,60 @@
+[
+  {
+    "mes": "2026-02",
+    "tipo": "clima",
+    "titulo": "Chuvas fortes e alagamentos",
+    "descricao": "Em 9/2, forte temporal causou alagamentos e deslizamentos, e a cidade chegou ao estágio 3 de alerta, com sirenes acionadas. Em 21/2, nova chuva forte colocou o Rio em estágio 2, com alagamentos nas zonas Norte, Oeste e no Centro. Não há registro de fechamento de atrativos nesses dias.",
+    "impacto": "negativo",
+    "atracoes": [
+      "Bondinho",
+      "Trem Corcovado",
+      "Paineiras"
+    ]
+  },
+  {
+    "mes": "2026-05",
+    "tipo": "evento",
+    "titulo": "Show da Shakira em Copacabana",
+    "descricao": "Show gratuito de Shakira na praia de Copacabana em 2/5, dentro do projeto Todo Mundo no Rio. Segundo a Prefeitura, o público foi de cerca de 2 milhões de pessoas, com grande movimentação na orla e na cidade.",
+    "impacto": "neutro"
+  },
+  {
+    "mes": "2026-06",
+    "ate": "2026-07",
+    "tipo": "evento",
+    "titulo": "Copa do Mundo 2026",
+    "descricao": "Copa do Mundo disputada nos EUA, Canadá e México, de 11/6 a 19/7. Os jogos da Seleção (eliminada nas oitavas de final, em 5/7) podem ter alterado a rotina e a visitação aos atrativos nos dias de jogo.",
+    "impacto": "neutro"
+  },
+  {
+    "mes": "2026-08",
+    "ate": "2026-10",
+    "tipo": "obras",
+    "titulo": "Obras no Cristo Redentor",
+    "descricao": "Obras no Cristo estão impactando a visitação ao monumento, o que afeta o PAX do Trem do Corcovado e das Paineiras (Cristo).",
+    "impacto": "negativo",
+    "atracoes": [
+      "Trem Corcovado",
+      "Paineiras"
+    ]
+  },
+  {
+    "mes": "2026-08",
+    "tipo": "clima",
+    "titulo": "Ventania e ciclone-bomba",
+    "descricao": "Em 7/8, com a passagem do ciclone-bomba, a cidade entrou em estágio 3 de alerta. O Cristo (Trem do Corcovado e Paineiras) e o Bondinho suspenderam a operação a partir das 13h por segurança. Dias antes, em 5/8, a Defesa Civil já havia emitido alerta severo para ventos fortes.",
+    "impacto": "negativo",
+    "atracoes": [
+      "Bondinho",
+      "Trem Corcovado",
+      "Paineiras"
+    ]
+  },
+  {
+    "mes": "2026-09",
+    "tipo": "evento",
+    "titulo": "Rock in Rio",
+    "descricao": "Realização do Rock in Rio na cidade em setembro, evento de grande porte que pode ter influenciado a visitação aos atrativos no mês.",
+    "impacto": "neutro"
+  }
+]
