@@ -165,6 +165,113 @@
     $('tabela').innerHTML = `<thead>${h1}${h2}</thead><tbody>${rows}</tbody>`;
   }
 
+  /* ---------- fatores externos (símbolos sobre os meses) ---------- */
+  // Fonte: data/eventos.json. Tipos: obras, sol, chuva, evento, outro
+  const EVT = {
+    obras:  { ico: '🚧', nome: 'Obras' },
+    sol:    { ico: '☀️', nome: 'Sol / calor' },
+    chuva:  { ico: '🌧️', nome: 'Chuva' },
+    evento: { ico: '🎉', nome: 'Evento' },
+    outro:  { ico: 'ℹ️', nome: 'Outro fator' }
+  };
+  const IMP = {
+    negativo: { txt: 'Impacto negativo no PAX', cls: 'neg', bg: '#FDECF0', bd: '#EB4A75' },
+    positivo: { txt: 'Impacto positivo no PAX', cls: 'pos', bg: '#E3F4EE', bd: '#2F9E78' },
+    neutro:   { txt: 'Impacto a avaliar',       cls: 'neu', bg: '#EEF2F3', bd: '#7693A1' }
+  };
+  let EVENTOS = {};                       // 'AAAA-MM' -> [evento, ...]
+  const ESZ = 28, EGAP = 4, EPAD = 6;     // tamanho do símbolo, espaço entre eles, margem
+  const esc = (t) => String(t == null ? '' : t).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fmtM = (ym) => MESES_LONGO[+ym.slice(5) - 1] + ' de ' + ym.slice(0, 4);
+
+  function normEventos(list) {
+    const out = {};
+    (Array.isArray(list) ? list : []).forEach((e) => {
+      if (!e || !e.mes || !e.titulo) return;
+      const ini = String(e.mes).slice(0, 7); let fim = String(e.ate || e.mes).slice(0, 7);
+      let [y, m] = ini.split('-').map(Number); const [yf, mf] = fim.split('-').map(Number);
+      if (!y || !m) return;
+      if (!yf || !mf || yf * 12 + mf < y * 12 + m) fim = ini;
+      const [y2, m2] = fim.split('-').map(Number);
+      for (let g = 0; g < 60 && y * 12 + m <= y2 * 12 + m2; g++) {   // período ("ate") vira um símbolo por mês
+        const ym = key(y, m);
+        (out[ym] = out[ym] || []).push(Object.assign({}, e, { ym, ini, fim,
+          tipo: EVT[e.tipo] ? e.tipo : 'outro', impacto: IMP[e.impacto] ? e.impacto : 'neutro' }));
+        [y, m] = addM(y, m, 1);
+      }
+    });
+    return out;
+  }
+  const evtBand = (wins) => {
+    const n = Math.max(0, ...wins.map((w) => (EVENTOS[w] || []).length));
+    return n ? EPAD * 2 + n * ESZ + (n - 1) * EGAP : 0;
+  };
+
+  function pickEvt(chart, ev) {
+    const o = chart.options.plugins.evtIcons, p = $(o.panel);
+    if (chart.$sel === ev) { chart.$sel = null; p.hidden = true; return; }
+    chart.$sel = ev;
+    const t = EVT[ev.tipo], im = IMP[ev.impacto];
+    const periodo = ev.ini === ev.fim ? fmtM(ev.ini) : fmtM(ev.ini) + ' a ' + fmtM(ev.fim);
+    const att = [].concat(ev.atracoes || []).join(', ');
+    p.className = 'evt-panel evt-panel--' + im.cls;
+    p.innerHTML = `<div class="evt-panel__ico" aria-hidden="true">${t.ico}</div>
+      <div class="evt-panel__body">
+        <p class="evt-panel__meta">${esc(t.nome)} · ${esc(periodo)} <span class="evt-chip evt-chip--${im.cls}">${im.txt}</span></p>
+        <h3>${esc(ev.titulo)}</h3>
+        ${ev.descricao ? `<p>${esc(ev.descricao)}</p>` : ''}
+        ${att ? `<p class="evt-panel__att"><b>Atrações afetadas:</b> ${esc(att)}</p>` : ''}
+      </div>
+      <button type="button" class="evt-panel__x" aria-label="Fechar">×</button>`;
+    p.hidden = false;
+    p.querySelector('.evt-panel__x').onclick = () => { chart.$sel = null; p.hidden = true; chart.draw(); };
+    p.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+  }
+
+  const evtPlugin = {
+    id: 'evtIcons',
+    afterDraw(chart, _a, o) {
+      chart.$hits = []; if (!o || !o.wins) return;
+      const { ctx, chartArea } = chart, x = chart.scales.x;
+      ctx.save(); ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = `${ESZ - 11}px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif`;
+      o.wins.forEach((w, i) => {
+        const lista = EVENTOS[w] || []; if (!lista.length) return;
+        const cx = x.getPixelForValue(i);
+        lista.forEach((ev, k) => {
+          const cy = EPAD + ESZ / 2 + k * (ESZ + EGAP), im = IMP[ev.impacto], on = chart.$sel === ev;
+          if (on) {                                  // guia tracejada até o eixo do mês selecionado
+            ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = im.bd; ctx.lineWidth = 1.5; ctx.globalAlpha = .6;
+            ctx.beginPath(); ctx.moveTo(cx, EPAD * 2 + lista.length * ESZ + (lista.length - 1) * EGAP - EPAD + 2); ctx.lineTo(cx, chartArea.bottom); ctx.stroke(); ctx.restore();
+          }
+          ctx.beginPath(); ctx.arc(cx, cy, ESZ / 2 - 1, 0, Math.PI * 2);
+          ctx.fillStyle = im.bg; ctx.fill(); ctx.lineWidth = on ? 3 : 1.5; ctx.strokeStyle = im.bd; ctx.stroke();
+          ctx.fillStyle = '#233744'; ctx.fillText(EVT[ev.tipo].ico, cx, cy + 1);
+          chart.$hits.push({ x: cx, y: cy, ev });
+        });
+      });
+      ctx.restore();
+    },
+    afterEvent(chart, args) {
+      const e = args.event; if (!chart.$hits || !e) return;
+      if (e.type !== 'mousemove' && e.type !== 'click' && e.type !== 'mouseout') return;
+      const h = e.type === 'mouseout' ? null : chart.$hits.find((p) => Math.hypot(e.x - p.x, e.y - p.y) <= ESZ / 2 + 3);
+      chart.canvas.style.cursor = h ? 'pointer' : 'default';
+      chart.canvas.title = h ? h.ev.titulo : '';
+      if (e.type === 'click' && h) { pickEvt(chart, h.ev); args.changed = true; }
+    }
+  };
+  function renderEvtLegend(wins) {
+    const tipos = []; wins.forEach((w) => (EVENTOS[w] || []).forEach((ev) => { if (!tipos.includes(ev.tipo)) tipos.push(ev.tipo); }));
+    ['pax', 'share'].forEach((id) => {
+      $('evt-' + id).hidden = true;
+      const el = $('evt-leg-' + id); el.hidden = !tipos.length;
+      el.innerHTML = tipos.length ? '<span>Fatores externos — clique no símbolo do mês para ver detalhes:</span>' +
+        tipos.map((t) => `<span class="evt-leg__i">${EVT[t].ico} ${EVT[t].nome}</span>`).join('') +
+        '<span class="evt-leg__i"><i class="evt-leg__c evt-leg__c--neg"></i>negativo</span><span class="evt-leg__i"><i class="evt-leg__c evt-leg__c--pos"></i>positivo</span>' : '';
+    });
+  }
+
   /* ---------- gráficos ---------- */
   Chart.defaults.font.family = "'Stolzl', system-ui, sans-serif";
   Chart.defaults.font.size = 12;
@@ -202,15 +309,18 @@
     const labels = wins.map(lab);
     const linhas = ['Bondinho','AquaRio',CRISTO,'Trem Corcovado','Paineiras','YupStar'];
     const ds = (fn) => linhas.map((a) => ({ label: a, borderColor: COR[a], backgroundColor: COR[a],
-      borderWidth: a === 'Bondinho' ? 3.5 : 2.2, pointRadius: a === 'Bondinho' ? 3.5 : 2.2, tension: .25, spanGaps: false,
+      borderWidth: a === 'Bondinho' ? 3.5 : 2.2, pointRadius: a === 'Bondinho' ? 5 : 4, pointHoverRadius: 8, pointHitRadius: 10, pointHoverBorderWidth: 3, pointHoverBorderColor: '#fff', tension: .25, spanGaps: false,
       data: wins.map((w) => hasData(w) ? fn(w, a) : null) }));
-    const line = (fmt, tipFmt, data) => ({ type: 'line', data: { labels, datasets: data },
-      options: { responsive: true, maintainAspectRatio: false, interaction: { mode: 'index', intersect: false },
-        plugins: { legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } },
-          tooltip: { callbacks: { label: (c) => ' ' + c.dataset.label + ': ' + tipFmt(c.parsed.y) } } },
+    const band = evtBand(wins);
+    const line = (fmt, tipFmt, data, panel) => ({ type: 'line', plugins: [evtPlugin], data: { labels, datasets: data },
+      options: { responsive: true, maintainAspectRatio: false, layout: { padding: { top: band } }, interaction: { mode: 'nearest', intersect: true },   // tooltip individual: só a bolinha sob o mouse
+        plugins: { evtIcons: { wins, panel }, legend: { position: 'bottom', labels: { usePointStyle: true, boxWidth: 8 } },
+          tooltip: { displayColors: true, padding: 10, titleFont: { weight: '700' }, bodyFont: { size: 14 },
+            callbacks: { title: (items) => items[0].label, label: (c) => ' ' + c.dataset.label + ': ' + tipFmt(c.parsed.y) } } },
         scales: { y: { beginAtZero: true, ticks: { callback: fmt }, grid: { color: '#E6ECEF' } }, x: { grid: { display: false } } } } });
-    mk('c-pax', line((v) => nf0.format(v), (v) => nf1.format(v) + ' mil', ds((w, a) => val(w, a))));
-    mk('c-share', line((v) => nf0.format(v * 100) + '%', (v) => pct(v), ds((w, a) => { const t = val(w, MERC); return t ? val(w, a) / t : null; })));
+    mk('c-pax', line((v) => nf0.format(v), (v) => nf1.format(v) + ' mil', ds((w, a) => val(w, a)), 'evt-pax'));
+    mk('c-share', line((v) => nf0.format(v * 100) + '%', (v) => pct(v), ds((w, a) => { const t = val(w, MERC); return t ? val(w, a) / t : null; }), 'evt-share'));
+    renderEvtLegend(wins);
 
     // YTD empilhado
     const ordem = ['BioParque','YupStar','AquaRio','Bondinho',CRISTO].filter((a) => !(EXCL && a === 'BioParque'));
@@ -319,7 +429,12 @@
       throw e;
     }
   }
-  load().then(([csv, cfg]) => {
+  async function loadEventos() {
+    try { const r = await fetch('data/eventos.json', { cache: 'no-cache' }); if (!r.ok) throw new Error('fetch'); return await r.json(); }
+    catch (e) { return window.PAX_EVENTOS || []; }
+  }
+  load().then(async ([csv, cfg]) => {
+    EVENTOS = normEventos(await loadEventos());
     CFG = cfg; ZERO = cfg.bioparque_zero_desde || ZERO;
     CFG.nota_exclusao = CFG.nota_exclusao || 'O mercado foi calculado sem o BioParque nos dois períodos, para comparar a mesma base.';
     DB = parseCSV(csv); applyRules(); initFilters(); render();

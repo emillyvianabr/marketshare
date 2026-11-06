@@ -62,6 +62,31 @@ try:
 except Exception as e:
     erros.append(f"config.json inválido: {e}")
 
+# fatores externos (data/eventos.json) — opcional
+TIPOS, IMPACTOS = {"obras", "sol", "chuva", "evento", "outro"}, {"negativo", "positivo", "neutro"}
+def _ym(s):
+    try:
+        a, m = str(s).split("-")[:2]; return len(a) == 4 and 1 <= int(m) <= 12
+    except Exception:
+        return False
+try:
+    evs = json.load(open("data/eventos.json", encoding="utf-8"))
+    if not isinstance(evs, list):
+        erros.append("eventos.json: deve ser uma lista [ ... ]")
+    else:
+        for i, e in enumerate(evs, start=1):
+            if not isinstance(e, dict): erros.append(f"eventos.json #{i}: deve ser um objeto {{...}}"); continue
+            if not _ym(e.get("mes")): erros.append(f"eventos.json #{i}: 'mes' inválido (use AAAA-MM)")
+            if "ate" in e and (not _ym(e["ate"]) or str(e["ate"])[:7] < str(e.get("mes"))[:7]): erros.append(f"eventos.json #{i}: 'ate' inválido ou anterior a 'mes'")
+            if e.get("tipo") not in TIPOS: erros.append(f"eventos.json #{i}: 'tipo' deve ser um de {', '.join(sorted(TIPOS))}")
+            if e.get("impacto", "neutro") not in IMPACTOS: erros.append(f"eventos.json #{i}: 'impacto' deve ser um de {', '.join(sorted(IMPACTOS))}")
+            if not str(e.get("titulo", "")).strip(): erros.append(f"eventos.json #{i}: falta 'titulo'")
+            if str(e.get("titulo", "")).upper().startswith("EXEMPLO"): avisos.append(f"eventos.json #{i}: ainda é um EXEMPLO — substitua ou apague")
+except FileNotFoundError:
+    pass
+except Exception as ex:
+    erros.append(f"eventos.json inválido: {ex}")
+
 ult = ordem[-1] if ordem else None
 print(f"{len(vistos)} registros · {len(dados)} meses · último mês: {ult[1]:02d}/{ult[0]}" if ult else "sem dados")
 for w in avisos: print("AVISO:", w)

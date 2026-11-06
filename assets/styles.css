@@ -102,6 +102,29 @@ tr.dest td:first-child{font-weight:700}
 /* gráficos */
 .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
 .chart{position:relative;height:320px}
+.chart--full{height:460px}
+
+
+/* fatores externos sobre os meses */
+[hidden]{display:none!important}
+.evt-legend{display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;margin:-4px 0 10px;font-size:13px;color:var(--s700)}
+.evt-leg__i{white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.evt-leg__c{display:inline-block;width:12px;height:12px;border-radius:50%;border:2px solid}
+.evt-leg__c--neg{border-color:var(--pink);background:var(--pink50)}.evt-leg__c--pos{border-color:var(--ok);background:#E3F4EE}
+.evt-panel{display:flex;gap:14px;align-items:flex-start;margin-top:14px;padding:16px 18px;border-radius:var(--r);background:var(--paper);border:1px solid var(--border);border-left:5px solid var(--s500);animation:evtIn .18s ease}
+.evt-panel--neg{background:var(--pink50);border-left-color:var(--pink)}
+.evt-panel--pos{background:#E8F6F0;border-left-color:var(--ok)}
+.evt-panel__ico{font-size:30px;line-height:1.1}
+.evt-panel__body{flex:1;min-width:0}
+.evt-panel__meta{margin:0 0 2px!important;font-size:12px!important;font-weight:500!important;text-transform:uppercase;letter-spacing:.08em;color:var(--s700)}
+.evt-panel h3{font-size:17px;font-weight:700;margin:2px 0 6px}
+.evt-panel p{margin:0 0 6px;font-size:15px;font-weight:400}
+.evt-panel__att{color:var(--s700)}
+.evt-chip{display:inline-block;margin-left:8px;padding:2px 9px;border-radius:999px;font-size:11px;letter-spacing:.04em;background:#fff;text-transform:none}
+.evt-chip--neg{color:#C73660}.evt-chip--pos{color:#1E7A5A}.evt-chip--neu{color:var(--s700)}
+.evt-panel__x{background:none;border:0;font-size:26px;line-height:1;cursor:pointer;color:var(--s700);padding:0 6px;border-radius:8px}
+.evt-panel__x:hover{background:rgba(35,55,68,.08)}
+@keyframes evtIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
 
 /* heatmap */
 .heat{display:grid;grid-template-columns:150px repeat(12,minmax(54px,1fr));gap:3px;min-width:820px;font-variant-numeric:tabular-nums}
@@ -118,6 +141,7 @@ tr.dest td:first-child{font-weight:700}
 .foot__nota{font-size:14px;font-weight:400}
 
 @media(max-width:900px){
+  .chart--full{height:380px}
   .kpis{grid-template-columns:1fr 1fr}.grid2{grid-template-columns:1fr}
   .hero h1{font-size:34px}.hero{padding-bottom:84px}
 }

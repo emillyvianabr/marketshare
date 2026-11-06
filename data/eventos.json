@@ -1,0 +1,42 @@
+[
+  {
+    "mes": "2025-12",
+    "tipo": "evento",
+    "titulo": "EXEMPLO: grande evento na cidade",
+    "descricao": "Texto de exemplo. Substitua pelo evento real e explique como ele afetou a visitação do mês.",
+    "impacto": "positivo",
+    "atracoes": ["Bondinho", "AquaRio"]
+  },
+  {
+    "mes": "2026-01",
+    "tipo": "sol",
+    "titulo": "EXEMPLO: verão com muitos dias de sol",
+    "descricao": "Texto de exemplo. Tempo firme costuma favorecer atrativos ao ar livre.",
+    "impacto": "positivo",
+    "atracoes": ["Bondinho"]
+  },
+  {
+    "mes": "2026-02",
+    "tipo": "chuva",
+    "titulo": "EXEMPLO: semana de chuvas fortes",
+    "descricao": "Texto de exemplo. Chuva e baixa visibilidade reduzem a visitação em atrativos de mirante.",
+    "impacto": "negativo",
+    "atracoes": ["Bondinho", "Paineiras", "Trem Corcovado"]
+  },
+  {
+    "mes": "2026-03",
+    "ate": "2026-04",
+    "tipo": "obras",
+    "titulo": "EXEMPLO: obras no acesso ao atrativo",
+    "descricao": "Texto de exemplo. Use o campo \"ate\" para obras ou fatores que duram vários meses: o símbolo aparece em cada mês do período.",
+    "impacto": "negativo",
+    "atracoes": ["Bondinho"]
+  },
+  {
+    "mes": "2026-03",
+    "tipo": "chuva",
+    "titulo": "EXEMPLO: dois fatores no mesmo mês",
+    "descricao": "Texto de exemplo. Quando há mais de um fator no mês, os símbolos ficam empilhados.",
+    "impacto": "negativo"
+  }
+]

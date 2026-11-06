@@ -9,6 +9,7 @@ Toda a informação vem de **um arquivo**: `data/pax.csv`.
 index.html              página do painel
 assets/                 estilos, lógica (app.js), exportação para PPT (export-pptx.js), fontes Stolzl, logo e bibliotecas
 data/pax.csv            dados mensais (é o único arquivo que você edita todo mês)
+data/eventos.json       fatores externos mostrados nos gráficos (obras, clima, eventos)
 data/config.json        regra do BioParque, textos de nota e textos do PPT exportado
 scripts/validate.py     confere o CSV antes de publicar
 .github/workflows/      validação + publicação automática
@@ -33,6 +34,28 @@ scripts/validate.py     confere o CSV antes de publicar
    Se houver erro (atração com nome errado, data inválida, mês incompleto), a publicação é bloqueada e a aba **Actions** mostra o motivo.
 
 Quem prefere continuar no Excel: `python scripts/xlsx_to_csv.py PAX_Concorrencia_Set26_organizado.xlsx` regera o CSV a partir da aba Base_PAX.
+
+## Fatores externos nos gráficos (obras, clima, eventos)
+
+Nos gráficos de 13 meses aparecem símbolos sobre os meses em que algum fator externo pode ter afetado o PAX.
+Clicar no símbolo abre, embaixo do gráfico, um quadro com a explicação; clicar de novo (ou no ×) fecha.
+Tudo vem de **`data/eventos.json`** — uma lista, um bloco por fator:
+
+```json
+{
+  "mes": "2026-03",            // AAAA-MM
+  "ate": "2026-04",            // opcional: período (o símbolo aparece em cada mês)
+  "tipo": "obras",             // obras 🚧 · sol ☀️ · chuva 🌧️ · evento 🎉 · outro ℹ️
+  "titulo": "Obras no acesso", // título do quadro
+  "descricao": "O que aconteceu e como afetou o PAX.",
+  "impacto": "negativo",       // negativo · positivo · neutro (cor do contorno)
+  "atracoes": ["Bondinho"]     // opcional
+}
+```
+
+Vários fatores no mesmo mês ficam empilhados. O `validate.py` confere o arquivo antes de publicar.
+Os itens que começam com **EXEMPLO** são só demonstração: troque pelos reais ou apague.
+Para abrir com duplo clique, rode `python scripts/build_local.py` (inclui os fatores no `data/pax.js`).
 
 ## Exportar para PowerPoint
 

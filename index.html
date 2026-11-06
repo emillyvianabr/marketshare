@@ -49,9 +49,18 @@
     <div class="scroll"><table id="tabela"></table></div>
   </section>
 
-  <section class="grid2">
-    <div class="card"><h2>PAX nos últimos 13 meses <span class="unit">mil</span></h2><div class="chart"><canvas id="c-pax"></canvas></div></div>
-    <div class="card"><h2>Market share nos últimos 13 meses</h2><div class="chart"><canvas id="c-share"></canvas></div></div>
+  <section class="card">
+    <h2>PAX nos últimos 13 meses <span class="unit">mil</span></h2>
+    <p class="evt-legend" id="evt-leg-pax" hidden></p>
+    <div class="chart chart--full"><canvas id="c-pax"></canvas></div>
+    <div class="evt-panel" id="evt-pax" hidden aria-live="polite"></div>
+  </section>
+
+  <section class="card">
+    <h2>Market share nos últimos 13 meses</h2>
+    <p class="evt-legend" id="evt-leg-share" hidden></p>
+    <div class="chart chart--full"><canvas id="c-share"></canvas></div>
+    <div class="evt-panel" id="evt-share" hidden aria-live="polite"></div>
   </section>
 
   <section class="grid2">
